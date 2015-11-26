@@ -1,2 +1,2 @@
 # elfSys
-lib elf struct analysis
+To analysis C static libaray file.
