@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "type.h"
 #include "file.h"
 #include "libSys.h"
@@ -9,7 +10,16 @@ int main(int argc, char* argv[])
 {
 	u8* fileData = NULL;
 	u32 fileSize;
-	scanf("%s", fileName);
+	if(argc == 2)
+	{
+		strcpy(fileName, argv[1]);
+	}
+	else
+	{
+		printf("filename : ");
+		scanf("%s", fileName);
+		getchar();
+	}
 	fileSize = getFileSize(fileName);
 	if(!fileSize)
 		goto end;
