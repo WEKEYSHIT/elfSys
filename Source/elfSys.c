@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+static u8 isLittle = 0;
+
 void view_EhdrIdent(Ehdr_Ident*	e_id)
 {
 	u8* EI_DATA_VALUE[]= {"ELFDATANONE","ELFDATA2LSB","ELFDATA2MSB","NONE"};
@@ -65,19 +67,20 @@ void init_Ehdr(Elf32_Ehdr* ehdr, u8* buff)
 {
 #define buffOffset(Mem)	(buff + GetOffByMem(Elf32_Ehdr, Mem))
 	memcpy(&ehdr->e_ident, buffOffset(e_ident), sizeof(Ehdr_Ident));
-	ehdr->e_type = viewGetNum16(buffOffset(e_type), 0);
-	ehdr->e_machine = viewGetNum16(buffOffset(e_machine), 0);
-	ehdr->e_version = viewGetNum(buffOffset(e_version),0);
-	ehdr->e_entry = viewGetNum(buffOffset(e_entry),0);
-	ehdr->e_phoff = viewGetNum(buffOffset(e_phoff),0);
-	ehdr->e_shoff = viewGetNum(buffOffset(e_shoff),0);
-	ehdr->e_flags = viewGetNum(buffOffset(e_flags),0);
-	ehdr->e_ehsize = viewGetNum16(buffOffset(e_ehsize),0);
-	ehdr->e_phentsize = viewGetNum16(buffOffset(e_phentsize),0);
-	ehdr->e_phnum = viewGetNum16(buffOffset(e_phnum),0);
-	ehdr->e_shnum = viewGetNum16(buffOffset(e_shnum),0);
-	ehdr->e_version = viewGetNum16(buffOffset(e_version),0);
-	ehdr->e_shstrndx = viewGetNum16(buffOffset(e_shstrndx),0);
+	isLittle = ehdr->e_ident.EI_DATA&0x01;
+	ehdr->e_type = viewGetNum16(buffOffset(e_type), isLittle);
+	ehdr->e_machine = viewGetNum16(buffOffset(e_machine), isLittle);
+	ehdr->e_version = viewGetNum(buffOffset(e_version),isLittle);
+	ehdr->e_entry = viewGetNum(buffOffset(e_entry),isLittle);
+	ehdr->e_phoff = viewGetNum(buffOffset(e_phoff),isLittle);
+	ehdr->e_shoff = viewGetNum(buffOffset(e_shoff),isLittle);
+	ehdr->e_flags = viewGetNum(buffOffset(e_flags),isLittle);
+	ehdr->e_ehsize = viewGetNum16(buffOffset(e_ehsize),isLittle);
+	ehdr->e_phentsize = viewGetNum16(buffOffset(e_phentsize),isLittle);
+	ehdr->e_phnum = viewGetNum16(buffOffset(e_phnum),isLittle);
+	ehdr->e_shnum = viewGetNum16(buffOffset(e_shnum),isLittle);
+	ehdr->e_version = viewGetNum16(buffOffset(e_version),isLittle);
+	ehdr->e_shstrndx = viewGetNum16(buffOffset(e_shstrndx),isLittle);
 #undef	buffOffset
 }
 
@@ -93,16 +96,16 @@ void init_SectionTable(Elf32_Sec* secTable, u16 shNum, u8* buff, u32 shdOff)
 	Elf32_Sec* pSec = secTable;
 	while(shNum--)
 	{
-		pSec->shdr.sh_name = viewGetNum(&pShdr->sh_name, 0);
-		pSec->shdr.sh_type = viewGetNum(&pShdr->sh_type, 0);
-		pSec->shdr.sh_flags = viewGetNum(&pShdr->sh_flags, 0);
-		pSec->shdr.sh_addr = viewGetNum(&pShdr->sh_addr, 0);
-		pSec->shdr.sh_offset = viewGetNum(&pShdr->sh_offset, 0);
-		pSec->shdr.sh_size = viewGetNum(&pShdr->sh_size, 0);
-		pSec->shdr.sh_link = viewGetNum(&pShdr->sh_link, 0);
-		pSec->shdr.sh_info = viewGetNum(&pShdr->sh_info, 0);
-		pSec->shdr.sh_addralign = viewGetNum(&pShdr->sh_addralign, 0);
-		pSec->shdr.sh_entsize = viewGetNum(&pShdr->sh_entsize, 0);
+		pSec->shdr.sh_name = viewGetNum(&pShdr->sh_name, isLittle);
+		pSec->shdr.sh_type = viewGetNum(&pShdr->sh_type, isLittle);
+		pSec->shdr.sh_flags = viewGetNum(&pShdr->sh_flags, isLittle);
+		pSec->shdr.sh_addr = viewGetNum(&pShdr->sh_addr, isLittle);
+		pSec->shdr.sh_offset = viewGetNum(&pShdr->sh_offset, isLittle);
+		pSec->shdr.sh_size = viewGetNum(&pShdr->sh_size, isLittle);
+		pSec->shdr.sh_link = viewGetNum(&pShdr->sh_link, isLittle);
+		pSec->shdr.sh_info = viewGetNum(&pShdr->sh_info, isLittle);
+		pSec->shdr.sh_addralign = viewGetNum(&pShdr->sh_addralign, isLittle);
+		pSec->shdr.sh_entsize = viewGetNum(&pShdr->sh_entsize, isLittle);
 		pSec->data = buff + pSec->shdr.sh_offset;
 		pSec->dataSize = pSec->shdr.sh_size;
 		pShdr ++;
