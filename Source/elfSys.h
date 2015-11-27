@@ -64,6 +64,16 @@ typedef struct
 	Elf32_Sec* Section;
 }Elf32_SecTable;
 
+typedef struct
+{
+	Elf32_Word st_name;
+	Elf32_Addr st_value;
+	Elf32_Word st_size;
+	u8	st_info;
+	u8	st_other;
+	Elf32_Half st_shndx;
+}Elf32_Sym;
+
 void elfSys(u8* buff);
 
 #endif

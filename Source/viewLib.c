@@ -32,11 +32,13 @@ u32 viewAtoi(u8* numStr)
 	return atoi(numStr);
 }
 
-void viewNhex(u8* fmt, void* vhex, u8 len)
+void viewNhex(u8* fmt, void* vhex, u32 len)
 {
-	u8 viewBuff[257*3];
+	u8 viewBuff[1024*3];
 	u32 viewOff = 0;
 	u8* hex = (u8*)vhex;
+	if(fmt == NULL || vhex == NULL || len == 0 || len > sizeof(viewBuff)/3)
+		return;
 	while(len--)
 		viewOff += sprintf(viewBuff + viewOff, "%02x ", *hex++);
 	viewBuff[viewOff-1] = 0;

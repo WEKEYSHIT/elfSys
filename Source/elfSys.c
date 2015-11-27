@@ -39,19 +39,70 @@ void view_Ehdr(Elf32_Ehdr* eh)
 	printf("e_shstrndx: %04x\n", eh->e_shstrndx);
 }
 
-void view_SecTable(Elf32_SecTable* Sectab)
+u8* SecType[] = 
+{
+	"SHT_NULL",
+	"SHT_PROGBITS~",
+	"SHT_SYMTAB",
+	"SHT_STRTAB",
+	"SHT_RELA",
+	"SHT_HASH",
+	"SHT_DYNAMIC",
+	"SHT_NOTE",
+	"SHT_NOBITS~",
+	"SHT_REL",
+	"SHT_SHLIB~",
+	"SHT_EXT~",
+};
+u8* getSecType(u32 type)
+{
+	u8 off = 0;
+	if(type > sizeof(SecType)/sizeof(u8*))
+		type = sizeof(SecType)/sizeof(u8*)-1;
+	return SecType[type];
+}
+u8 SecAttr[100];
+u8* getSecAttrByFlags(u32 flags)
+{
+	u8 off = 0;
+	if(flags & 0x01)
+	{
+		SecAttr[off++] = 'W';
+		SecAttr[off++] = '|';
+	}
+	if(flags & 0x02)
+	{
+		SecAttr[off++] = 'A';
+		SecAttr[off++] = '|';
+	}
+	if(flags & 0x04)
+	{
+		SecAttr[off++] = 'X';
+		SecAttr[off++] = '|';
+	}
+	if(flags & 0xfffffff8)
+	{
+		SecAttr[off++] = '~';
+		SecAttr[off++] = '|';
+	}
+	SecAttr[off-1] = 0;
+	return SecAttr;
+}
+
+void view_SecTable(Elf32_SecTable* Sectab, u32 strNum)
 {
 	u16 i = Sectab->SecNum;
 	u16 j = 0;
 	Elf32_Sec* pSec = Sectab->Section;
+	Elf32_Sec* pSecStr = Sectab->Section + strNum;
 	printf(SEGFORMAT, "SecTable");
 	printf("SecTable num: %d\n", Sectab->SecNum);
 	while(i--)
 	{	
 		printf("======%d======%d======\n", j++, pSec->dataSize);
-		printf("sh_name: %08x\n", pSec->shdr.sh_name);
-		printf("sh_type: %08x\n", pSec->shdr.sh_type);
-		printf("sh_flags: %08x\n", pSec->shdr.sh_flags);
+		printf("sh_name: %08x %s\n", pSec->shdr.sh_name, pSecStr->data + pSec->shdr.sh_name);
+		printf("sh_type: %08x %s\n", pSec->shdr.sh_type, getSecType(pSec->shdr.sh_type));
+		printf("sh_flags: %08x %s\n", pSec->shdr.sh_flags, getSecAttrByFlags(pSec->shdr.sh_flags));
 		printf("sh_addr: %08x\n", pSec->shdr.sh_addr);
 		printf("sh_offset: %08x\n", pSec->shdr.sh_offset);
 		printf("sh_size: %08x\n", pSec->shdr.sh_size);
@@ -59,6 +110,7 @@ void view_SecTable(Elf32_SecTable* Sectab)
 		printf("sh_info: %08x\n", pSec->shdr.sh_info);
 		printf("sh_addralign: %08x\n", pSec->shdr.sh_addralign);
 		printf("sh_entsize: %08x\n", pSec->shdr.sh_entsize);
+		viewNhex("data_hex: %s\n", pSec->data, pSec->dataSize);
 		pSec++;
 	}
 }
@@ -126,7 +178,7 @@ void elfSys(u8* buff)
 		goto end;
 
 	init_SectionTable(secs.Section, secs.SecNum, buff, elf_header.e_shoff);
-	view_SecTable(&secs);
+	view_SecTable(&secs, elf_header.e_shstrndx);
 end:
 	if(secs.Section)
 		free(secs.Section);
